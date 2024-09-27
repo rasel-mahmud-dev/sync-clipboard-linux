@@ -9,10 +9,8 @@ export default function AboutPage() {
     });
 
     useEffect(() => {
-        // Fetch system information on component mount
         const fetchSystemInfo = async () => {
             const info = await window?.electron?.getSystemInfo();
-            console.log(info, "jhio")
             setSystemInfo(info);
         };
 

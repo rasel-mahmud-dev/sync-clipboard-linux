@@ -1,14 +1,15 @@
 import path from 'path'
 import {app, BrowserWindow, clipboard, Tray, Menu, ipcMain} from 'electron'
-import createMenuTemplate from "./meun";
 import os from "os";
 
 
 const {collection, getDocs, query, queryBy, by, orderBy, onSnapshot} = require('firebase/firestore');
 const db = require("../src/firebaseConfig")
+import {clipboardWatcher} from './ClipboardListener'
+
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
-let tray = null; // To hold the tray instance
+let tray = null;
 process.env.DIST = path.join(__dirname, '../dist')
 process.env.VITE_PUBLIC = app.isPackaged
     ? process.env.DIST
@@ -44,7 +45,7 @@ function createWindow() {
     }
 
 
-    setTimeout(()=>{
+    setTimeout(() => {
         win.webContents.openDevTools()
         console.log("open...")
     }, 5000)
@@ -64,7 +65,6 @@ function createWindow() {
         win.close()
     });
 
-    // Handle events from renderer process
     ipcMain.on('minimize-window', () => win.minimize());
     ipcMain.on('maximize-window', () => {
         if (win.isMaximized()) {
@@ -80,6 +80,21 @@ function createWindow() {
             memory: Math.round(os.totalmem() / (1024 * 1024 * 1024)), // Convert bytes to GB
             cores: os.cpus().length,
         };
+    });
+
+
+    const watcher = clipboardWatcher({
+        watchDelay: 2000,
+        onTextChange: (newText: string) => {
+            win.webContents.send('clipboard-text-change', newText);
+        },
+        onImageChange: (newImage: string) => {
+            win.webContents.send('clipboard-image-change', newImage);
+        },
+    });
+
+    ipcMain.handle('clipboard-stop', () => {
+        watcher.stop()
     });
 
 }

@@ -6,6 +6,7 @@ import HomePage from "./screens/HomePage";
 import Protected from "./components/Protected";
 import Clips from "./screens/Clips";
 import AboutPage from "./screens/About";
+import Settings from "./screens/Settings";
 
 const routes = createBrowserRouter([
     {
@@ -15,6 +16,7 @@ const routes = createBrowserRouter([
             {path: "", element: <Protected> <HomePage /></Protected>},
             {path: "login", element: <Login />},
             {path: "clips", element: <Clips />},
+            {path: "settings", element: <Settings />},
             {path: "about", element: <AboutPage />},
             // {path: "register", element: <RegisterPage />},
         ]

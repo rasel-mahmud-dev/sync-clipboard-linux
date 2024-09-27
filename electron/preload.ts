@@ -123,5 +123,12 @@ contextBridge.exposeInMainWorld('electron', {
   maximizeWindow: () => ipcRenderer.send('maximize-window'),
   closeWindow: () => ipcRenderer.send('close-window'),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
+
+  ipcRenderer: {
+    send: (channel, data) => ipcRenderer.send(channel, data),
+    on: (channel, func) => ipcRenderer.on(channel, (event, ...args) => func(...args)),
+    removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel),
+  },
+
 });
 

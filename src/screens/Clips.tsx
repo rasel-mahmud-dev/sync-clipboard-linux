@@ -9,6 +9,8 @@ const Clips = () => {
         queryKey: ['clips']
     });
 
+    const clips = data?.data?.clips
+
     if (isLoading) {
         return <div>Loading...</div>;
     }
@@ -21,10 +23,9 @@ const Clips = () => {
         <div>
             <h1 className="text-2xl font-bold mb-4">Clip Items</h1>
             <ul className="list-disc pl-5">
-                {data?.map((clip) => (
-                    <li key={clip.id} className="mb-2">
-                        <h2 className="font-semibold">{clip.title}</h2>
-                        <p>{clip.description}</p>
+                {clips?.map((clip) => (
+                    <li key={clip._id} className="mb-2">
+                        <p>{clip.content}</p>
                     </li>
                 ))}
             </ul>
