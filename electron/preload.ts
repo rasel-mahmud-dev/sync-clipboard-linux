@@ -116,3 +116,12 @@ window.onmessage = (ev) => {
 }
 
 setTimeout(removeLoading, 4999)
+
+
+contextBridge.exposeInMainWorld('electron', {
+  minimizeWindow: () => ipcRenderer.send('minimize-window'),
+  maximizeWindow: () => ipcRenderer.send('maximize-window'),
+  closeWindow: () => ipcRenderer.send('close-window'),
+  getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
+});
+

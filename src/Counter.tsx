@@ -1,19 +1,25 @@
 import React from 'react'
 import './style.css'
+import ActionBar from "./ActionBar";
+import LoginForm from "./components/Login";
 
 // Your Counter component
 const Counter = () => {
     const [count, setCount] = React.useState(0)
 
     return (
-        <div className="card">
-            <h2>SDKLFJDSFKLSDF: KSDLF :SD JSD:F SDFJ :DS:KFJ :SDF KLSDJF: LSDKF </h2>
-            <h2>SDKLFJDSFKLSDF: KSDLF :SD JSD:F SDFJ :DS:KFJ :SDF KLSDJF: LSDKF </h2>
-            <h2>SDKLFJDSFKLSDF: KSDLF :SD JSD:F SDFJ :DS:KFJ :SDF KLSDJF: LSDKF </h2>
-            <h2>SDKLFJDSFKLSDF: KSDLF :SD JSD:F SDFJ :DS:KFJ :SDF KLSDJF: LSDKF </h2>
-            <h2>SDKLFJDSFKLSDF: KSDLF :SD JSD:F SDFJ :DS:KFJ :SDF KLSDJF: LSDKF </h2>
-            <h2>SDKLFJDSFKLSDF: KSDLF :SD JSD:F SDFJ :DS:KFJ :SDF KLSDJF: LSDKF </h2>
-        </div>
+        <>
+            {/*<ActionBar/>*/}
+
+            <div className=" ">
+
+               <LoginForm />
+
+
+            </div>
+
+        </>
+
     )
 }
 

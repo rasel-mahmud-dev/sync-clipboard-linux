@@ -1,10 +1,18 @@
 import './style.css'
 import React from "react";
 import ReactDOM from 'react-dom/client'
-import Counter from './Counter'
+import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import App from "./App";
 
 
-ReactDOM.createRoot(document.getElementById('app')).render(<Counter />)
+const queryClient = new QueryClient()
+
+
+ReactDOM.createRoot(document.getElementById('app')).render(
+    <QueryClientProvider client={queryClient}>
+        <App />
+    </QueryClientProvider>
+)
 
 // Remove Preload scripts loading
 postMessage({payload: 'removeLoading'}, '*')

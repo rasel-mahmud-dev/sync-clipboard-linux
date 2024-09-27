@@ -1,5 +1,7 @@
 import path from 'path'
-import {app, BrowserWindow, clipboard, Tray, Menu} from 'electron'
+import {app, BrowserWindow, clipboard, Tray, Menu, ipcMain} from 'electron'
+import createMenuTemplate from "./meun";
+import os from "os";
 
 
 const {collection, getDocs, query, queryBy, by, orderBy, onSnapshot} = require('firebase/firestore');
@@ -25,6 +27,7 @@ function createWindow() {
         webPreferences: {
             preload: path.join(__dirname, './preload.js'),
         },
+        // frame: false
     })
 
     // Test active push message to Renderer-process.
@@ -40,13 +43,45 @@ function createWindow() {
         win.loadFile(path.join(process.env.DIST, 'index.html'))
     }
 
+
+    setTimeout(()=>{
+        win.webContents.openDevTools()
+        console.log("open...")
+    }, 5000)
+
+    // const menu = Menu.buildFromTemplate(createMenuTemplate());
+    // Menu.setApp licationMenu(menu);
+    // win.setMenu(null)
+    // Menu.setApplicationMenu(null);
+
+
     // Handle the close event to minimize the app to tray instead of quitting
     win.on('close', (event) => {
-        if (!app.isQuiting) {
-            event.preventDefault();
-            win.hide(); // Hide the window
+        // if (!app.isQuiting) {
+        //     event.preventDefault();
+        //     win.hide(); // Hide the window
+        // }
+        win.close()
+    });
+
+    // Handle events from renderer process
+    ipcMain.on('minimize-window', () => win.minimize());
+    ipcMain.on('maximize-window', () => {
+        if (win.isMaximized()) {
+            win.unmaximize();
+        } else {
+            win.maximize();
         }
     });
+    ipcMain.on('close-window', () => win.close());
+    ipcMain.handle('get-system-info', () => {
+        return {
+            os: `${os.platform()} ${os.release()}`,
+            memory: Math.round(os.totalmem() / (1024 * 1024 * 1024)), // Convert bytes to GB
+            cores: os.cpus().length,
+        };
+    });
+
 }
 
 
@@ -59,6 +94,7 @@ onSnapshot(queryMessages, (snapshot) => {
     documents.forEach((change, index) => {
         if (change.type === "added" && documents.length === index + 1) {
             const data = change.doc.data();
+            console.log(data)
             clipboard.writeText(data.content);
             console.log("Content copied to clipboard:", data.content);
 

@@ -1,0 +1,21 @@
+/* You can keep any custom styles here if necessary */
+
+.container {
+  @apply max-w-md mx-auto p-6 border border-gray-300 rounded-lg bg-white;
+}
+
+.inputGroup {
+  @apply mb-4;
+}
+
+.input {
+  @apply w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.button {
+  @apply w-full py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 focus:outline-none;
+}
+
+.error {
+  @apply text-red-500 mb-4;
+}
