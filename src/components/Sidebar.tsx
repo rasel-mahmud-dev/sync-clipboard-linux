@@ -28,7 +28,9 @@ const Sidebar = ({ items, auth }) => {
                     <AiOutlineUser/>
                 </div>
             </div>
-            <h2 className="text-center text-base text-gray-50 font-semibold mb-4">{auth?.username}</h2>
+            <h2 className="text-center text-base text-gray-50 font-semibold">{auth?.username}</h2>
+            <h2 className="text-center text-xs text-gray-50 mb-6">{auth?.device}</h2>
+
             <ul className="list-none p-0">
                 {items.map(item => (
                     <li key={item.id} onClick={()=>jump(item)} className="flex items-center my-2">

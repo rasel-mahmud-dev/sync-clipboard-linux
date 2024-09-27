@@ -21,6 +21,7 @@ export default function SyncConfig() {
         queryFn: () => api.get("/api/v1/auth/devices"),
         queryKey: ['clips'],
     });
+    const devices = data?.data?.devices
 
     const settingData = useMutation({
         mutationFn: () => api.get("/api/v1/auth/settings"),
@@ -34,6 +35,7 @@ export default function SyncConfig() {
             const settings = data?.data?.settings
             if (settings) {
                 localStorage.setItem("settings", JSON.stringify(settings));
+                setSettings(settings)
             }
         },
         onError: (error) => {
@@ -41,7 +43,7 @@ export default function SyncConfig() {
         }
     });
 
-    const devices = data?.data?.devices
+
 
     useEffect(() => {
         if (devices && Array.isArray(devices)) {
@@ -60,30 +62,6 @@ export default function SyncConfig() {
         }
     }, [devices, settings?.selectedSyncDevices]);
 
-
-    useEffect(() => {
-        async function storeSettings() {
-            try {
-                let settings = localStorage.getItem("settings");
-                settings = JSON.parse(settings)
-                setSettings(settings)
-
-            } catch (ex) {
-                settingData.mutateAsync().then(data => {
-                    const settings = data?.data?.settings
-                    if (settings) {
-                        setSettings(settings)
-                        localStorage.setItem("settings", JSON.stringify(settings))
-                    }
-
-                }).catch(ex => {
-                    console.log("settings fetch fail")
-                })
-            }
-        }
-
-        storeSettings()
-    }, []);
 
     const toggleSetting = (id: number, setting: 'pull' | 'push') => {
         setDevicesState(devicesState.map((device) =>

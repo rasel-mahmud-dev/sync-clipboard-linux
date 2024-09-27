@@ -74,12 +74,20 @@ function createWindow() {
         }
     });
     ipcMain.on('close-window', () => win.close());
+
     ipcMain.handle('get-system-info', () => {
         return {
             os: `${os.platform()} ${os.release()}`,
             memory: Math.round(os.totalmem() / (1024 * 1024 * 1024)), // Convert bytes to GB
             cores: os.cpus().length,
         };
+    });
+
+    ipcMain.handle('send-clip-firestore', (event, data) => {
+        console.log(data, "data")
+
+        // store to firestore..
+        return "pi"
     });
 
 

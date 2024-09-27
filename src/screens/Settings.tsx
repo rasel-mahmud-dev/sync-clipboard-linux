@@ -12,7 +12,6 @@ const Settings = () => {
             <div className="p-4">
                 <SyncConfig/>
             </div>
-
         </div>
     );
 };

@@ -123,6 +123,7 @@ contextBridge.exposeInMainWorld('electron', {
   maximizeWindow: () => ipcRenderer.send('maximize-window'),
   closeWindow: () => ipcRenderer.send('close-window'),
   getSystemInfo: () => ipcRenderer.invoke('get-system-info'),
+  sendClipToFirestore: (data) => ipcRenderer.invoke('send-clip-firestore', data),
 
   ipcRenderer: {
     send: (channel, data) => ipcRenderer.send(channel, data),
