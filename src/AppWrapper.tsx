@@ -10,7 +10,7 @@ const sidebarItems = [
     { id: 2, label: 'Profile', icon: 'https://via.placeholder.com/30' },
     { id: 3, label: 'Settings', to: "/settings", icon: 'https://via.placeholder.com/30' },
     { id: 4, label: 'About', to: "/about", icon: 'https://via.placeholder.com/30' },
-    { id: 4, label: 'Logout', icon: 'https://via.placeholder.com/30' }
+    { id: 'logout', label: 'Logout', icon: 'https://via.placeholder.com/30' }
 ];
 
 

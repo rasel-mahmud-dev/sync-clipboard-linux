@@ -2,7 +2,6 @@ import React from "react";
 import useAuthState from "../store/authState";
 import {Navigate} from "react-router-dom";
 
-
 const Protected = ({ children }) => {
     const { auth, authFetched } = useAuthState();
     if (!authFetched) return <h1>Loading...</h1>;
@@ -13,7 +12,7 @@ const Protected = ({ children }) => {
 
     return (
         <div>
-            <Navigate to="login" />
+            <Navigate to="/login" />
         </div>
     );
 };

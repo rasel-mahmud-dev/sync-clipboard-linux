@@ -11,13 +11,13 @@ import Settings from "./screens/Settings";
 const routes = createBrowserRouter([
     {
         path: "/",
-        element: <AppWrapper />,
+        element: <AppWrapper/>,
         children: [
-            {path: "", element: <Protected> <HomePage /></Protected>},
-            {path: "login", element: <Login />},
-            {path: "clips", element: <Clips />},
-            {path: "settings", element: <Settings />},
-            {path: "about", element: <AboutPage />},
+            {path: "", element: <Protected> <HomePage/></Protected>},
+            {path: "login", element: <Login/>},
+            {path: "clips", element: <Protected> <Clips/></Protected>},
+            {path: "settings", element: <Protected><Settings/></Protected>},
+            {path: "about", element: <AboutPage/>},
             // {path: "register", element: <RegisterPage />},
         ]
     }

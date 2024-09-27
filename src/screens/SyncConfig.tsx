@@ -1,5 +1,8 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Smartphone, Laptop} from 'lucide-react';
+import {useMutation, useQuery} from "@tanstack/react-query";
+import {api} from "../apis";
+import useSettingState from "../store/settingsState";
 
 interface Device {
     id: number;
@@ -10,21 +13,94 @@ interface Device {
 }
 
 export default function SyncConfig() {
-    const [devices, setDevices] = useState<Device[]>([
-        {id: 1, name: 'Xiaomi', type: 'mobile', pull: false, push: false},
-        {id: 2, name: 'Samsung', type: 'mobile', pull: false, push: false},
-        {id: 3, name: 'MacBook M2', type: 'laptop', pull: false, push: false},
-        {id: 4, name: 'Lenovo', type: 'laptop', pull: false, push: false},
-    ]);
+    const [devicesState, setDevicesState] = useState<Device[]>([]);
+
+    const {settings, setSettings} = useSettingState()
+
+    const {data} = useQuery({
+        queryFn: () => api.get("/api/v1/auth/devices"),
+        queryKey: ['clips'],
+    });
+
+    const settingData = useMutation({
+        mutationFn: () => api.get("/api/v1/auth/settings"),
+        mutationKey: ['settingData']
+    });
+
+    const updateSetting = useMutation({
+        mutationFn: (payload: any) => api.post("/api/v1/auth/settings", payload),
+        mutationKey: ['updateSetting'],
+        onSuccess: (data) => {
+            const settings = data?.data?.settings
+            if (settings) {
+                localStorage.setItem("settings", JSON.stringify(settings));
+            }
+        },
+        onError: (error) => {
+            alert(error?.message);
+        }
+    });
+
+    const devices = data?.data?.devices
+
+    useEffect(() => {
+        if (devices && Array.isArray(devices)) {
+            let updatedState = [...devicesState]
+            for (let device of devices) {
+                const deviceSetting = settings?.selectedSyncDevices?.[device._id]
+                updatedState.push({
+                    id: device._id,
+                    name: device.device,
+                    type: 'mobile',
+                    pull: deviceSetting?.pull || false,
+                    push: deviceSetting?.push || false,
+                })
+            }
+            setDevicesState(updatedState)
+        }
+    }, [devices, settings?.selectedSyncDevices]);
+
+
+    useEffect(() => {
+        async function storeSettings() {
+            try {
+                let settings = localStorage.getItem("settings");
+                settings = JSON.parse(settings)
+                setSettings(settings)
+
+            } catch (ex) {
+                settingData.mutateAsync().then(data => {
+                    const settings = data?.data?.settings
+                    if (settings) {
+                        setSettings(settings)
+                        localStorage.setItem("settings", JSON.stringify(settings))
+                    }
+
+                }).catch(ex => {
+                    console.log("settings fetch fail")
+                })
+            }
+        }
+
+        storeSettings()
+    }, []);
 
     const toggleSetting = (id: number, setting: 'pull' | 'push') => {
-        setDevices(devices.map((device) =>
+        setDevicesState(devicesState.map((device) =>
             device.id === id ? {...device, [setting]: !device[setting]} : device
         ));
     };
 
-    function handleUpdate(){
+    function handleUpdate() {
+        const selectedSyncDevices: { [key: string]: { pull: boolean, push: boolean } } = {}
 
+        for (let device of devicesState) {
+            selectedSyncDevices[device.id] = {
+                pull: device.pull,
+                push: device.push,
+            }
+        }
+        updateSetting.mutate({selectedSyncDevices})
     }
 
     return (
@@ -45,7 +121,7 @@ export default function SyncConfig() {
                     </tr>
                     </thead>
                     <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                    {devices.map((device) => (
+                    {devicesState.map((device) => (
                         <tr key={device.id}>
                             <td className="px-6 py-4 whitespace-nowrap">
                                 <div className="flex items-center">
@@ -86,7 +162,8 @@ export default function SyncConfig() {
 
             </div>
 
-            <button onClick={handleUpdate} className="bg-white text-sm dark:bg-gray-800 shadow-md rounded-md px-4 py-1.5 mt-2 overflow-hidden">
+            <button onClick={handleUpdate}
+                    className="bg-white text-sm dark:bg-gray-800 shadow-md rounded-md px-4 py-1.5 mt-2 overflow-hidden">
                 Update
             </button>
 
