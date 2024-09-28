@@ -31,37 +31,55 @@ const AppWrapper = () => {
         api.get("/api/v1/auth/verify")
             .then(res => {
                 setAuth(res?.data?.user)
+                window?.electron?.authenticated(res?.data?.user)
             })
             .catch(err => setAuth(null));
+    }, [])
 
-        window.electron.ipcRenderer.on('clipboard-text-change', (newText) => {
-
-            let pushEnableForSome = false
-            const selectedSyncDevices = useSettingState.getState()?.settings?.selectedSyncDevices
-            for (let deviceId in selectedSyncDevices) {
-                const config = selectedSyncDevices[deviceId];
-                if (config.push) {
-                    pushEnableForSome = true
+    useEffect(() => {
+        const selectedSyncDevices = useSettingState.getState()?.settings?.selectedSyncDevices
+        if (auth && selectedSyncDevices) {
+            window?.electron?.ipcRenderer?.on('clipboard-text-change', (newText) => {
+                let pushEnableForSome = false
+                const receiverIds = []
+                for (let deviceId in selectedSyncDevices) {
+                    const config = selectedSyncDevices[deviceId];
+                    if (config.push) {
+                        receiverIds.push(deviceId)
+                        receiverIds.push(auth?.deviceId)
+                        pushEnableForSome = true
+                    }
                 }
-            }
 
-            if (pushEnableForSome) {
-                console.log("send to clip db.")
-                uploadClip.mutate(newText)
+                if (pushEnableForSome) {
+                    console.log("send to clip db.")
+                    uploadClip.mutate(newText)
 
-                console.log("send to firestore.")
-                window?.electron?.sendClipToFirestore({
-                    content: newText,
+                    console.log("send to firestore.")
+                    window?.electron?.sendClipToFirestore({
+                        content: newText,
+                        type: "text",
+                        receiverIds,
+                        senderId: auth?.deviceId,
+                    });
+                }
+            });
 
-                });
-            }
-        });
+            window.electron?.ipcRenderer?.on('clipboard-image-change', (newImageDataUrl) => {
+                // setClipboardImage(newImageDataUrl);
+            });
+            window.electron?.ipcRenderer?.on('emit::firestore', (data) => {
+                console.log("emit::firestore", data)
+            });
+        }
 
-        window.electron.ipcRenderer.on('clipboard-image-change', (newImageDataUrl) => {
-            // setClipboardImage(newImageDataUrl);
-        });
+        return () => {
+            window.electron?.ipcRenderer?.removeAllListeners('clipboard-text-change');
+            window.electron?.ipcRenderer?.removeAllListeners('clipboard-image-change');
+        };
+    }, [auth, settings])
 
-
+    useEffect(() => {
         async function storeSettings() {
             try {
                 let settings = localStorage.getItem("settings");
@@ -82,14 +100,8 @@ const AppWrapper = () => {
             }
         }
 
-        storeSettings()
-
-        return () => {
-            window.electron.ipcRenderer.removeAllListeners('clipboard-text-change');
-            window.electron.ipcRenderer.removeAllListeners('clipboard-image-change');
-        };
-
-    }, [])
+        auth && storeSettings()
+    }, [auth])
 
 
     return (

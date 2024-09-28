@@ -1,11 +1,12 @@
-// Import the functions you need from the SDKs you need
+import {initializeApp} from "firebase/app";
+import {getFirestore} from "firebase/firestore";
+
 require('dotenv').config();
 
-const { initializeApp } = require("firebase/app");
-const { getFirestore } = require("firebase/firestore");
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
+
+
+export const firebaseConfig = {
   apiKey: process.env.API_KEY,
   authDomain: process.env.AUTH_DOMAIN,
   projectId: process.env.PROJECT_ID,
@@ -14,11 +15,7 @@ const firebaseConfig = {
   appId: process.env.APP_ID
 };
 
-console.log(firebaseConfig)
+export const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Export the db object for use in other files
-module.exports = db;
+export default db;

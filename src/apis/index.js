@@ -1,5 +1,5 @@
 import axios from "axios";
-export const backend = import.meta.env.DEV ? "http://localhost:3200" : "https://clipboard-api-two.vercel.app"
+export const backend = !import.meta.env.DEV ? "http://localhost:3200" : "https://clipboard-api-two.vercel.app"
 
 export const api = axios.create({
     baseURL: backend

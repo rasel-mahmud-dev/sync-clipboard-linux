@@ -1,11 +1,10 @@
 import path from 'path'
 import {app, BrowserWindow, clipboard, Tray, Menu, ipcMain} from 'electron'
 import os from "os";
-
-
-const {collection, getDocs, query, queryBy, by, orderBy, onSnapshot} = require('firebase/firestore');
-const db = require("../src/firebaseConfig")
 import {clipboardWatcher} from './ClipboardListener'
+import watchFirestore from "./watchFirestore";
+import { doc, setDoc} from "firebase/firestore";
+import db from "../src/firebaseConfig";
 
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = 'true'
@@ -21,6 +20,7 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 let win: BrowserWindow | null
+
 
 function createWindow() {
     win = new BrowserWindow({
@@ -44,12 +44,6 @@ function createWindow() {
         win.loadFile(path.join(process.env.DIST, 'index.html'))
     }
 
-
-    setTimeout(() => {
-        win.webContents.openDevTools()
-        console.log("open...")
-    }, 5000)
-
     // const menu = Menu.buildFromTemplate(createMenuTemplate());
     // Menu.setApp licationMenu(menu);
     // win.setMenu(null)
@@ -65,6 +59,26 @@ function createWindow() {
         win.close()
     });
 
+    let watcher;
+
+    ipcMain.handle('authenticated', async (event, auth) => {
+        if (auth?.deviceId) {
+            console.log("start watching...", auth?.deviceId)
+
+            watcher = clipboardWatcher({
+                watchDelay: 2000,
+                onTextChange: (newText: string) => {
+                    win.webContents.send('clipboard-text-change', newText);
+                },
+                onImageChange: (newImage: string) => {
+                    win.webContents.send('clipboard-image-change', newImage);
+                },
+            });
+
+            watchFirestore(auth?.deviceId, db, win)
+        }
+    });
+
     ipcMain.on('minimize-window', () => win.minimize());
     ipcMain.on('maximize-window', () => {
         if (win.isMaximized()) {
@@ -73,6 +87,7 @@ function createWindow() {
             win.maximize();
         }
     });
+
     ipcMain.on('close-window', () => win.close());
 
     ipcMain.handle('get-system-info', () => {
@@ -83,47 +98,18 @@ function createWindow() {
         };
     });
 
-    ipcMain.handle('send-clip-firestore', (event, data) => {
-        console.log(data, "data")
-
-        // store to firestore..
-        return "pi"
-    });
-
-
-    const watcher = clipboardWatcher({
-        watchDelay: 2000,
-        onTextChange: (newText: string) => {
-            win.webContents.send('clipboard-text-change', newText);
-        },
-        onImageChange: (newImage: string) => {
-            win.webContents.send('clipboard-image-change', newImage);
-        },
+    ipcMain.handle('send-clip-firestore', async (event, data) => {
+        const id = Date.now().toString()
+        const docRef = doc(db, "clips", id);
+        await setDoc(docRef, data);
+        console.log("store in firstore..")
+        return ""
     });
 
     ipcMain.handle('clipboard-stop', () => {
-        watcher.stop()
+        watcher?.stop()
     });
-
 }
-
-
-const messagesRef = collection(db, "clips");
-const queryMessages = query(messagesRef, orderBy("timestamp"));
-
-onSnapshot(queryMessages, (snapshot) => {
-    let documents = snapshot.docChanges();
-
-    documents.forEach((change, index) => {
-        if (change.type === "added" && documents.length === index + 1) {
-            const data = change.doc.data();
-            console.log(data)
-            clipboard.writeText(data.content);
-            console.log("Content copied to clipboard:", data.content);
-
-        }
-    });
-});
 
 
 app.on('window-all-closed', () => {
@@ -144,7 +130,7 @@ app.whenReady().then(() => {
         },
         {
             label: 'Quit', click: () => {
-                app.isQuiting = true;
+                // app?.isQuiting = true;
                 app.quit(); // Quit the app
             }
         }
